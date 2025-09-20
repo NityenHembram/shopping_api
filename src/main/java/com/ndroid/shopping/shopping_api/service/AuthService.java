@@ -15,6 +15,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,23 +34,33 @@ public class AuthService {
     private final ModelMapper modelMapper;
 
 
-    public ResponseEntity<LoginResponseDto> login(LoginRequestDto loginRequestDto) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequestDto.username,
-                loginRequestDto.password));
-        UserModel userModel = (UserModel) authentication.getPrincipal();
+    public ResponseEntity<Object> login(LoginRequestDto loginRequestDto) {
 
-        String token = authUtils.generateToken(userModel);
-        CommonResponse commonResponse = new CommonResponse(200, "Successfully Logged in", null);
-        LoginResponseDto loginResponseDto = new LoginResponseDto(token, null, commonResponse);
-        return ResponseEntity.status(HttpStatus.OK).body(loginResponseDto);
+        CommonResponse commonResponse;
+        try {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequestDto.username,
+                    loginRequestDto.password));
+            UserModel userModel = (UserModel) authentication.getPrincipal();
+
+            String token = authUtils.generateToken(userModel);
+             commonResponse = new CommonResponse(200, "Successfully Logged in", null);
+            LoginResponseDto loginResponseDto = new LoginResponseDto(token, null, commonResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(loginResponseDto);
+        }catch (BadCredentialsException e){
+            commonResponse = new CommonResponse(200,"Invalide Crednetials",  null
+            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(commonResponse)  ;
+        }
+
     }
 
 
-    public ResponseEntity<CommonResponse> registerUser(UserRequestDto userDto) {
-        UserModel user = userRepository.findByUsername(userDto.getUsername()).orElse(null);
-        if(user != null) throw new IllegalArgumentException("User Already Exist");
+    public ResponseEntity<CommonResponse>   registerUser(UserRequestDto userDto) {
+
         CommonResponse commonResponse = new CommonResponse();
         try {
+            UserModel user = userRepository.findByUsername(userDto.getUsername()).orElse(null);
+            if(user != null) throw new IllegalArgumentException("User Already Exist");
            user =  UserModel.builder().email(userDto.getEmail())
                     .username(userDto.getUsername())
                     .password(encodePassword(userDto.getPassword()))
@@ -62,10 +73,10 @@ public class AuthService {
             commonResponse.setMessage("Success");
             return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
 
-        } catch (DataIntegrityViolationException e) {
+        } catch (IllegalArgumentException e) {
             commonResponse.setStatusCode(HttpStatus.CONFLICT.value());
             commonResponse.setMessage("Data Conflict: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(commonResponse);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(commonResponse);
         } catch (Exception e) {
             e.printStackTrace();
             commonResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());

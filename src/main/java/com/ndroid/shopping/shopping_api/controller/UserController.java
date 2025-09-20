@@ -19,8 +19,8 @@ public class UserController {
     private final UserRepository repository;
 
     @GetMapping("/listUser")
-    public ResponseEntity<List<UserModel>> getAllUsers(){
-        return ResponseEntity.status(HttpStatus.OK).body(repository.findAll());
+    public List<UserModel> getAllUsers(){
+        return repository.findAll();
     }
 
 }
