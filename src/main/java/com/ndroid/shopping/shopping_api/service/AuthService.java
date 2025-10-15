@@ -10,8 +10,8 @@ import com.ndroid.shopping.shopping_api.repository.UserRepository;
 import com.ndroid.shopping.shopping_api.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.modelmapper.ModelMapper;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,20 +38,51 @@ public class AuthService {
 
         CommonResponse commonResponse;
         try {
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequestDto.username,
-                    loginRequestDto.password));
+            Authentication authentication = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequestDto.username,
+                            loginRequestDto.password));
             UserModel userModel = (UserModel) authentication.getPrincipal();
+            int userId = userModel.getId();
 
-            String token = authUtils.generateToken(userModel);
-             commonResponse = new CommonResponse(200, "Successfully Logged in", null);
-            LoginResponseDto loginResponseDto = new LoginResponseDto(token, null, commonResponse);
-            return ResponseEntity.status(HttpStatus.OK).body(loginResponseDto);
-        }catch (BadCredentialsException e){
-            commonResponse = new CommonResponse(200,"Invalide Crednetials",  null
-            );
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(commonResponse)  ;
+            String accessToken = authUtils.generateAccesssToken(userId);
+            String refreshToken = authUtils.generateRefreshToken(userId);
+            LoginResponseDto loginResponseDto = new LoginResponseDto(accessToken, refreshToken);
+            commonResponse = new CommonResponse(200, "Successfully Logged in", loginResponseDto);
+
+            return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
+        } catch (BadCredentialsException e) {
+            commonResponse = new CommonResponse(200, "Invalide Crednetials", null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(commonResponse);
         }
 
+    }
+    
+
+    public ResponseEntity<Object> refreshToken(String refreshToken) {
+        CommonResponse commonResponse;
+        try {
+            if (authUtils.isTokenExpired(refreshToken)) {
+                commonResponse = new CommonResponse(401, "Refresh Token is expired", null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(commonResponse);
+            }
+
+            if(authUtils.extractTokenType(refreshToken) == "access") {
+                commonResponse = new CommonResponse(400, "Invalid Token Type", null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(commonResponse);
+            }
+
+            Integer userId = authUtils.extractUserId(refreshToken);
+            String newAccessToken = authUtils.generateAccesssToken(userId);
+            String newRefreshToken = authUtils.generateRefreshToken(userId);
+            LoginResponseDto loginResponseDto = new LoginResponseDto(newAccessToken, newRefreshToken);
+            commonResponse = new CommonResponse(200, "Token refreshed successfully", loginResponseDto);
+            return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            commonResponse = new CommonResponse(500, "Internal server error: " + e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(commonResponse);
+        }
     }
 
 

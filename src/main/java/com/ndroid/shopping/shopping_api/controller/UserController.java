@@ -1,26 +1,21 @@
 package com.ndroid.shopping.shopping_api.controller;
-
-
-import com.ndroid.shopping.shopping_api.model.UserModel;
 import com.ndroid.shopping.shopping_api.repository.UserRepository;
+import com.ndroid.shopping.shopping_api.service.UserService;
+
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @AllArgsConstructor
 public class UserController {
 
-    private final UserRepository repository;
+    private final UserService service;
 
     @GetMapping("/listUser")
-    public List<UserModel> getAllUsers(){
-        return repository.findAll();
+    public ResponseEntity<Object> getAllUsers(){
+        return service.getAllUserData();
     }
 
 }

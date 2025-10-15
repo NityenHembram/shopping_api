@@ -1,6 +1,6 @@
 package com.ndroid.shopping.shopping_api.model;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
