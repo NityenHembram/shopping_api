@@ -1,17 +1,15 @@
 package com.ndroid.shopping.shopping_api.service;
 
-
+import com.ndroid.shopping.shopping_api.dto.CommonResponse;
 import com.ndroid.shopping.shopping_api.dto.LoginRequestDto;
 import com.ndroid.shopping.shopping_api.dto.LoginResponseDto;
 import com.ndroid.shopping.shopping_api.dto.UserRequestDto;
-import com.ndroid.shopping.shopping_api.model.CommonResponse;
-import com.ndroid.shopping.shopping_api.model.UserModel;
+import com.ndroid.shopping.shopping_api.model.User;
 import com.ndroid.shopping.shopping_api.repository.UserRepository;
 import com.ndroid.shopping.shopping_api.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,26 +24,23 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
-
     private final AuthenticationManager authenticationManager;
     private final AuthUtils authUtils;
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
-    private final ModelMapper modelMapper;
-
 
     public ResponseEntity<Object> login(LoginRequestDto loginRequestDto) {
 
         CommonResponse commonResponse;
         try {
             Authentication authentication = authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequestDto.username,
+                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(),
                             loginRequestDto.password));
-            UserModel userModel = (UserModel) authentication.getPrincipal();
-            int userId = userModel.getId();
+            User userModel = (User) authentication.getPrincipal();
+            Long userId = userModel.getId();
 
-            String accessToken = authUtils.generateAccesssToken(userId);
-            String refreshToken = authUtils.generateRefreshToken(userId);
+            String accessToken = authUtils.generateAccesssToken(userId.intValue());
+            String refreshToken = authUtils.generateRefreshToken(userId.intValue());
             LoginResponseDto loginResponseDto = new LoginResponseDto(accessToken, refreshToken);
             commonResponse = new CommonResponse(200, "Successfully Logged in", loginResponseDto);
 
@@ -56,7 +51,6 @@ public class AuthService {
         }
 
     }
-    
 
     public ResponseEntity<Object> refreshToken(String refreshToken) {
         CommonResponse commonResponse;
@@ -66,7 +60,7 @@ public class AuthService {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(commonResponse);
             }
 
-            if(authUtils.extractTokenType(refreshToken) == "access") {
+            if (authUtils.extractTokenType(refreshToken) == "access") {
                 commonResponse = new CommonResponse(400, "Invalid Token Type", null);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(commonResponse);
             }
@@ -85,20 +79,19 @@ public class AuthService {
         }
     }
 
-
-    public ResponseEntity<CommonResponse>   registerUser(UserRequestDto userDto) {
+    public ResponseEntity<CommonResponse> registerUser(UserRequestDto userDto) {
 
         CommonResponse commonResponse = new CommonResponse();
         try {
-            UserModel user = userRepository.findByUsername(userDto.getUsername()).orElse(null);
-            if(user != null) throw new IllegalArgumentException("User Already Exist");
-           user =  UserModel.builder().email(userDto.getEmail())
-                    .username(userDto.getUsername())
+            User user = userRepository.findByEmail(userDto.getUsername()).orElse(null);
+            if (user != null)
+                throw new IllegalArgumentException("User Already Exist");
+            user = User.builder().email(userDto.getEmail())
+                    .name(userDto.getUsername())
                     .password(encodePassword(userDto.getPassword()))
                     .phone(userDto.getPhone())
-                    .address(userDto.getAddress())
                     .createdAt(userDto.getCreatedAt()).build();
-                    userRepository.save(user);
+            userRepository.save(user);
 
             commonResponse.setStatusCode(HttpStatus.OK.value());
             commonResponse.setMessage("Success");
@@ -116,10 +109,8 @@ public class AuthService {
         }
     }
 
-
     public String encodePassword(String rawPassword) {
         return encoder.encode(rawPassword);
     }
-
 
 }

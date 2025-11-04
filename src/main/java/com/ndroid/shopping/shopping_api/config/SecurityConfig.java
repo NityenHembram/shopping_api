@@ -14,27 +14,27 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @AllArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter filter;
+        private final JwtAuthenticationFilter filter;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable()
-                .headers().frameOptions().sameOrigin()
-                .and()
-                .authorizeRequests()
-                        .antMatchers("/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/auth/**",
-                                "/h2-console/**"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                .and()
-                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement()
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf().disable()
+                                .headers().frameOptions().sameOrigin()
+                                .and()
+                                .authorizeHttpRequests()
+                                .antMatchers("/swagger-ui/**",
+                                                "/v3/api-docs/**",
+                                                "/swagger-ui.html",
+                                                "/auth/**",
+                                                "/h2-console/**")
+                                .permitAll()
+                                .anyRequest().authenticated()
+                                .and()
+                                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
+                                .sessionManagement()
+                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        return http.build();
-    }
+                return http.build();
+        }
 }

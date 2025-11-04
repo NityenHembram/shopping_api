@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ndroid.shopping.shopping_api.dto.UserRequestDto;
-import com.ndroid.shopping.shopping_api.model.CommonResponse;
-
-
+import com.ndroid.shopping.shopping_api.dto.CommonResponse;
 
 @RestController
 @RequestMapping("/auth")
@@ -23,21 +21,19 @@ public class AuthContoller {
 
     private AuthService authService;
 
-
     @PostMapping(value = "/register")
-    public ResponseEntity<CommonResponse> registerUserController(@RequestBody UserRequestDto UserDto){
+    public ResponseEntity<CommonResponse> registerUserController(@RequestBody UserRequestDto UserDto) {
         return authService.registerUser(UserDto);
     }
 
-     @PostMapping(value = "/login")
-     public ResponseEntity<Object> loginController(@RequestBody LoginRequestDto loginRequestDto) {
-         return authService.login(loginRequestDto);
-     }
-     
-     @PostMapping(value = "/refresh-token")
-     public ResponseEntity<Object> refreshToken(@RequestParam String refreshToken) {
-         return authService.refreshToken(refreshToken);
-     }
+    @PostMapping(value = "/login")
+    public ResponseEntity<Object> loginController(@RequestBody LoginRequestDto loginRequestDto) {
+        return authService.login(loginRequestDto);
+    }
 
+    @PostMapping(value = "/refresh-token")
+    public ResponseEntity<Object> refreshToken(@RequestParam String refreshToken) {
+        return authService.refreshToken(refreshToken);
+    }
 
 }

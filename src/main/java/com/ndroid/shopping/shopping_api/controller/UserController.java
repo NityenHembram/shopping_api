@@ -1,5 +1,5 @@
 package com.ndroid.shopping.shopping_api.controller;
-import com.ndroid.shopping.shopping_api.repository.UserRepository;
+
 import com.ndroid.shopping.shopping_api.service.UserService;
 
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ public class UserController {
     private final UserService service;
 
     @GetMapping("/listUser")
-    public ResponseEntity<Object> getAllUsers(){
+    public ResponseEntity<Object> getAllUsers() {
         return service.getAllUserData();
     }
 
