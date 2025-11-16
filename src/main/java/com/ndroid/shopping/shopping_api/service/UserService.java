@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.ndroid.shopping.shopping_api.dto.ApiResponseDto;
+import com.ndroid.shopping.shopping_api.dto.CommonResponse;
 import com.ndroid.shopping.shopping_api.dto.UserModelDto;
 import com.ndroid.shopping.shopping_api.model.User;
 import com.ndroid.shopping.shopping_api.repository.UserRepository;
@@ -57,5 +58,19 @@ public class UserService {
                .build();
          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponseDto);
       }
+   }
+
+   public ResponseEntity<CommonResponse> getUserById(Long id) {
+      if (id == null) {
+         return ResponseEntity.badRequest().build();
+      }
+      if (repo.findById(id).isEmpty()) {
+         return ResponseEntity.notFound().build();
+      }
+      CommonResponse commonResponse = new CommonResponse();
+      commonResponse.setMessage("User fetched successfully");
+      commonResponse.setData(repo.findById(id).get());
+      commonResponse.setStatusCode(200);
+      return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
    }
 }

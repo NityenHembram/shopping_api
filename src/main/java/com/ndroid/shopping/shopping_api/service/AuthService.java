@@ -41,7 +41,7 @@ public class AuthService {
 
             String accessToken = authUtils.generateAccesssToken(userId.intValue());
             String refreshToken = authUtils.generateRefreshToken(userId.intValue());
-            LoginResponseDto loginResponseDto = new LoginResponseDto(accessToken, refreshToken);
+            LoginResponseDto loginResponseDto = new LoginResponseDto(accessToken, refreshToken, userId);
             commonResponse = new CommonResponse(200, "Successfully Logged in", loginResponseDto);
 
             return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
@@ -68,7 +68,7 @@ public class AuthService {
             Integer userId = authUtils.extractUserId(refreshToken);
             String newAccessToken = authUtils.generateAccesssToken(userId);
             String newRefreshToken = authUtils.generateRefreshToken(userId);
-            LoginResponseDto loginResponseDto = new LoginResponseDto(newAccessToken, newRefreshToken);
+            LoginResponseDto loginResponseDto = new LoginResponseDto(newAccessToken, newRefreshToken, userId);
             commonResponse = new CommonResponse(200, "Token refreshed successfully", loginResponseDto);
             return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
 

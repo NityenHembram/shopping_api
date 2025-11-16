@@ -8,10 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ndroid.shopping.shopping_api.dto.ApiResponseDto;
 import com.ndroid.shopping.shopping_api.dto.CommonResponse;
-import com.ndroid.shopping.shopping_api.model.Product;
-import com.ndroid.shopping.shopping_api.repository.ProductRepository;
 import com.ndroid.shopping.shopping_api.service.ProductService;
 
 @RestController
