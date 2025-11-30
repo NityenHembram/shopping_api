@@ -83,11 +83,11 @@ public class AuthService {
 
         CommonResponse commonResponse = new CommonResponse();
         try {
-            User user = userRepository.findByEmail(userDto.getUsername()).orElse(null);
+            User user = userRepository.findByEmail(userDto.getName()).orElse(null);
             if (user != null)
                 throw new IllegalArgumentException("User Already Exist");
             user = User.builder().email(userDto.getEmail())
-                    .name(userDto.getUsername())
+                    .name(userDto.getName())
                     .password(encodePassword(userDto.getPassword()))
                     .phone(userDto.getPhone())
                     .createdAt(userDto.getCreatedAt()).build();
